@@ -2,9 +2,10 @@
 my_msg="updateble_pkg.txt"
 my_log="updateble_pkg.log"
 dont_update=false
-pkg_patch='/mnt/Data/apps/repo_cache/FreeBSD:11:amd64/latest/All/'
-
-
+local_cache=false
+restart_type=0
+pkg_cache="pkg_cache"  #caching jail name
+pkg_patch='/mnt/Data/apps/repo_cache/FreeBSD:11:amd64/latest/All/'  #cached pkg's path
 
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" >> ${my_log}
 echo "" >> ${my_log}
@@ -16,8 +17,10 @@ display_help() {
     echo "options:   "
     echo "  -u args, --update_args args	  pass-trught args to pkg update"
     echo "  -g args, --upgrade_args args  pass-trught args to pkg upgrade"
-    echo "  -q				  quick, dont run pkg update"
-    echo
+    echo "  -q	    quick, dont run pkg update"
+    echo "  -c      enables local repo cache clearing on failed downloads. "
+    echo "  -r arg,  --restart_type arg   choose jail restart type"
+    echo " A - restart all jails with boot=1, U - restart only upgraded jails, Y - manual restart of upgraded jails, N - don't restart jails"
     exit 1
 }
 
@@ -44,7 +47,15 @@ do
            dont_update=true
            shift 1
            ;;
-
+      -c)
+           local_cache=true
+           shift 1
+           ;;
+      -r | --restart_type)
+          restart_type="$2"   # You may want to check validity of $2
+          shift 2
+          ;;
+ 
       --) # End of all options
           shift
           break
@@ -87,7 +98,9 @@ j_basejail=($( /usr/local/bin/iocage list -l -h | awk '{ print $10 }' ))
 #done
 #ASSUME_ALWAYS_YES=no
 
-iocage exec pkg_cache "sh /root/meta_clear.sh" 2>/dev/null
+if [ $local_cache == true ] ; then
+iocage exec $pkg_cache "sh /root/meta_clear.sh" 2>/dev/null
+fi
 #### pkg update ###
 
 if [ $dont_update == false ] ; then
@@ -124,6 +137,7 @@ for ((I = 0; I < ${#j_names[@]}; ++I )); do
 #      iocage pkg ${j_names[I]} upgrade ${upgrade_args} > >(tee -a stdout.log) 2> >(tee -a stderr.log >&2)
       iocage exec ${j_names[I]} "pkg upgrade ${upgrade_args}" > >(tee -a stdout.log) 2> >(tee -a stderr.log >&2)
 #      pkg -j ${j_nums[I]} upgrade $upgrade_args > >(tee -a stdout.log) 2> >(tee -a stderr.log >&2)
+     if [ $local_cache == true ] ; then
       bad_pkg="$(grep  'size mismatch, cannot continue' stderr.log)"
       while  [ ! -z "$bad_pkg" ] && (( fail < 5 ))  ; do  ##loop up to 5 times if upgrade failes
         ((fail=fail+1))
@@ -139,6 +153,7 @@ for ((I = 0; I < ${#j_names[@]}; ++I )); do
 #	iocage pkg ${j_names[I]} upgrade ${upgrade_args} > >(tee -a stdout.log) 2> >(tee -a stderr.log >&2)
         bad_pkg="$(grep  'size mismatch, cannot continue' stderr.log)"
       done
+     fi
       upg_flag="$(grep  'Installed packages to be UPGRADED:' stdout.log)"
       if [ ! -z "$upg_flag" ]; then
         upg_jail[u]=${j_names[I]}
@@ -169,12 +184,26 @@ else
   done
   echo -e "\e[0m"
 
+
+
+
+
   while true; do
-  echo "press 'A' to restart all upgraded."
+  if [ $restart_type == 0 ]; then
+  echo "press 'U' to restart all upgraded."
+  echo "press 'A' to restart all jails (with boot on)."
   echo "press 'Y' to restart one by one."
   read -p "press 'N' to not restart. " yn
+  else
+  yn=$restart_type
+  restart_type=0
+  fi
     case $yn in
       [Aa]* )  #restart all
+           iocage stop ALL
+           iocage start --rc
+      break;;
+      [Uu]* )  #restart all upgraded
         for ((I = 0; I < ${#upg_jail[@]}; ++I )); do
            iocage stop ${upg_jail[I]}
            iocage start ${upg_jail[I]}
