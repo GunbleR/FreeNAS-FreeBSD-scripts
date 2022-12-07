@@ -9,13 +9,13 @@ scripted=false
 # The command line help #
 #########################
 display_help() {
-    echo "Usage: $0 [option...] [path_to/file.flac]" >&2
+    echo "Usage: $0 [option...] [path_to/file.ape]" >&2
     echo "options:   "
     echo "   -c, --cue xyz	name of cue file"
     echo "   -t, --template xyz	output name template, use 'man shnsplit' for info, default:'$template'"
     echo "   -d, --directory	output directory, defaults to input file"
     echo "   -s,    		disables prompts and picks 1st detected file, use for scripts, run at your own risk"
-    echo " 			ex: find . -name "*.flac" | xargs -I '{}' ~/scripts/flac_split.sh -s '{}'  "
+    echo " 			ex: find . -name "*.ape" | xargs -I '{}' ~/scripts/ape_split.sh -s '{}'  "
     echo
     echo "This script requires installation of: cuetools, shntool and flac"
     echo
@@ -30,7 +30,7 @@ echo "dir	$dir"
 echo "odir	$o_dir"
 echo "sc	$scripted"
 echo "cuelist 	${cue_file[@]}"
-echo "flac_lst 	${flac_files[@]}"
+echo "ape_lst 	${ape_files[@]}"
 echo "scripted	$scripted"
 echo
 exit 0
@@ -189,42 +189,42 @@ done
 
 
 in_file="$1"
-if [ -z "$in_file" ] # auto find flac input file
+if [ -z "$in_file" ] # auto find ape input file
 then
-  flac_files=()
+  ape_files=()
   while IFS=  read -r -d $'\0'; do
-    flac_files+=("$REPLY")
-  done < <(find "$PWD" -name '*.flac' -print0)
-  if [ "${#flac_files[@]}" -eq 1 ]
+    ape_files+=("$REPLY")
+  done < <(find "$PWD" -name '*.ape' -print0)
+  if [ "${#ape_files[@]}" -eq 1 ]
   then
-    in_file="${flac_files[0]}"
-    prompt_confirm "Confirm using flac: $in_file" || exit 0
-  elif [ "${#flac_files[@]}" -eq 0 ]
+    in_file="${ape_files[0]}"
+    prompt_confirm "Confirm using ape: $in_file" || exit 0
+  elif [ "${#ape_files[@]}" -eq 0 ]
   then
     echo 'error!!!'
-    echo "no flac files detected or specified. use -h or --help for info"
+    echo "no ape files detected or specified. use -h or --help for info"
     echo
     exit 0
   else
-    echo "  ${#flac_files[@]} flac files found"
+    echo "  ${#ape_files[@]} ape files found"
     echo
     i=1
-    for each in "${flac_files[@]}"
+    for each in "${ape_files[@]}"
     do
       echo -e "\e[32m$i. $each"
       i=$((i+1))
     done
     echo -e "\e[39m"
-    if $scripted ; then in_file="${flac_files[0]}"; fi
+    if $scripted ; then in_file="${ape_files[0]}"; fi
     while [ -z "$in_file" ] ; do
-      read -r  -p "  specify file index between 1-${#flac_files[@]} or enter q to exit:" REPLY
+      read -r  -p "  specify file index between 1-${#ape_files[@]} or enter q to exit:" REPLY
       if [[ $REPLY =~ ^[Qq]$ ]]
       then
         exit 0
-      elif (( $REPLY > 0 && $REPLY <= "${#flac_files[@]}" ))
+      elif (( $REPLY > 0 && $REPLY <= "${#ape_files[@]}" ))
       then
         echo "$REPLY"
-        in_file="${flac_files[REPLY-1]}"
+        in_file="${ape_files[REPLY-1]}"           ### set input ape file
       else
         echo "invalid input"
       fi
@@ -274,7 +274,7 @@ then
       elif (( $REPLY > 0 && $REPLY <= "${#cue_file[@]}" ))
       then
         echo "$REPLY"
-        cue="${cue_file[REPLY-1]}"
+        cue="${cue_file[REPLY-1]}"               ### set input cue file
       else
         echo "invalid input"
       fi
@@ -285,14 +285,16 @@ fi
 
 if  $scripted ; then
   echo
-  echo -e "\e[96mflac: $in_file"
+  echo -e "\e[96mape: $in_file"
   echo -e "cue: $cue \e[39m"
 fi
 
 
 rm "shn-outp"* 2>/dev/null  ### actual work starts here
-set_pregap_name 		# find exact pregap nape for later removal
-cuebreakpoints  "$cue" | shnsplit -f "$cue" -t "shn-outp${template}"  -o flac  "${in_file}"  # split flacs
+ffmpeg -i "${in_file}" -acodec flac "${in_file}.flac"
+in_file="${in_file}.flac"
+set_pregap_name 		# find exact pregap name for later removal
+cuebreakpoints  "$cue" | shnsplit -f "$cue" -t "shn-outp${template}"  -o flac  "${in_file}"  # split apes
 if [ $? -ne 0 ]; then  		# stop on error
   echo -e "\e[31m shnsplit error!! \e[39m"
   echo
