@@ -27,6 +27,7 @@ this script does not delete tmp flac file or original files.
 ***
 # jails_upgrade_pkgs.sh
 automaticly updates/upgrades pkg in running iocage jails and prompts to restart them afterwards
+for some reason doesnt work on basejails, hence they excluded atm. you can update your plugins manually.
 ```
 Usage: jails_upgrade_pkgs.sh [options...]
 options:
