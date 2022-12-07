@@ -3,6 +3,7 @@ Scripts written for personal use in FreeBSD jails.
 ***
 # flac-split.sh
 automates spliting flac + cue rip into separete flac files w/ tags.\
+this script does not delete original files. delete them manually.
 requires installation of: cuetools shntool flac bash
  ```
 Usage: flac_split.sh [option...] [path_to/file.flac]
@@ -13,13 +14,16 @@ options:
     -s,                  disables prompts and picks 1st detected file, use for scripts, run at your own risk
                         ex: find . -name *.flac | xargs -I '{}' ~/scripts/flac_split.sh -s '{}'
  ```
-# this script does not delete original files. delete them manually.
+# 
 ***
 # ape-split.sh
 flac-split dirty adaptation for ape.
-converts main ape to flac and then splits like flac-split. requires ffmpeg.
-# atm not sure if pregap deletion works correctly with this one and probably never gonna test/fix it. probably the easiest fix is proper name conversion to first flac.
-# this script does not delete tmp flac file or original files.
+converts main ape to flac and then splits like flac-split.
+requires installation of: cuetools shntool flac bash ffmpeg
+this script does not delete tmp flac file or original files.
+
+!!! <strong> atm not sure if pregap deletion works correctly with this one and probably never gonna test/fix it. probably the easiest fix is proper name conversion to first flac (at the end of the script).</strong>
+
 ***
 # jails_upgrade_pkgs.sh
 automaticly updates/upgrades pkg in running iocage jails and prompts to restart them afterwards
