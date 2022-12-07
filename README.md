@@ -34,7 +34,7 @@ options:
   -u args, --update_args args     pass-trught args to pkg update
   -g args, --upgrade_args args  pass-trught args to pkg upgrade
   -q        quick, dont run pkg update
-  -e args, jail to exclude from upgrade. only 1 jail atm
+  -e arg, jail to exclude from upgrade. only 1 jail atm
   -r arg,  --restart_type arg   choose jail restart type from:
             A - restart all jails with boot=1, U - restart only upgraded jails,
             Y - manual restart of upgraded jails, N - don't restart jails
