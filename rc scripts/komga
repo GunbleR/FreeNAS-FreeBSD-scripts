@@ -32,7 +32,7 @@
 
 name=komga
 rcvar=${name}_enable
-procname="/usr/local/openjdk11/bin/java"
+procname="/usr/local/bin/java"
 
 load_rc_config "${name}"
 
