@@ -13,6 +13,13 @@ options:
     -s,                  disables prompts and picks 1st detected file, use for scripts, run at your own risk
                         ex: find . -name *.flac | xargs -I '{}' ~/scripts/flac_split.sh -s '{}'
  ```
+# this script does not delete original files. delete them manually.
+***
+# ape-split.sh
+flac-split dirty adaptation for ape.
+converts main ape to flac and then splits like flac-split. requires ffmpeg.
+# atm not sure if pregap deletion works correctly with this one and probably never gonna test/fix it. probably the easiest fix is proper name conversion to first flac.
+# this script does not delete tmp flac file or original files.
 ***
 # jails_upgrade_pkgs.sh
 automaticly updates/upgrades pkg in running iocage jails and prompts to restart them afterwards
@@ -22,7 +29,7 @@ options:
   -u args, --update_args args     pass-trught args to pkg update
   -g args, --upgrade_args args  pass-trught args to pkg upgrade
   -q        quick, dont run pkg update
-  -c      enables local repo cache clearing on failed downloads.
+  -e args, jail to exclude from upgrade. only 1 jail atm
   -r arg,  --restart_type arg   choose jail restart type from:
             A - restart all jails with boot=1, U - restart only upgraded jails,
             Y - manual restart of upgraded jails, N - don't restart jails
