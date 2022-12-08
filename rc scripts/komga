@@ -39,7 +39,7 @@ load_rc_config "${name}"
 : ${komga_enable:="NO"}
 : ${komga_user:="www"}
 : ${komga_group:="www"}
-: ${komga_home:="/var/data"}
+: ${komga_home:="/var/komga"}
 : ${komga_port:="8080"}
 
 start_precmd="export LC_CTYPE='en_US.UTF-8'"
