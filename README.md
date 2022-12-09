@@ -1,3 +1,6 @@
+# My collection of scripts for TrueNAS core
+
+
 # FreeNAS-FreeBSD-scripts
 Scripts written for personal use in FreeBSD jails.
 ***
